@@ -1,4 +1,20 @@
 form {
   display: flex;
   flex-direction: column;
+  align-content: flex-start;
+}
+
+#submitStates, #maxResults {
+  width: 50%;
+}
+
+form input[type="checkbox"]+label {
+  flex: 2;
+  flex-wrap: wrap;
+  height: 50px;
+  align-content: space-between;
+}
+
+.resultsList{
+  list-style: none;
 }

@@ -1,11 +1,38 @@
 
 /*This function is to be run on document load to start application processing */
 const apiKey = 'L5p6QF5bMtlSvf8OC373b45lMiBQSXp6sBgcqBEC';
+const defaultURL = 'https://developer.nps.gov/api/v1/parks';
 
 
-function getSelectedStated(states, maxResults) {
+function getSelectedStated(states, maxResults = 10) {
   console.log(states, maxResults);
 
+  const url = `${defaultURL}?stateCode=${states}&limit=${maxResults}&api_key=${apiKey}`;
+
+  console.log(url);
+
+  fetch(url)
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      }
+      throw new Error(response.statusText);
+    })
+    .then(data => displayResults(data))
+    .catch(error => alert(`Something went wrong. Try again later.${error.message}`));
+
+}
+
+function displayResults(results) {
+
+  console.log(results);
+  $('.resultsList').empty();
+  for (let i = 0; i < results.data.length; i++) {
+    $('.resultsList').append(
+      `<li><h3>${results.data[i].fullName}</h3>
+       <p>${results.data[i].description}</p>
+       <a href ="${results.data[i].url}">Visit Website</a></li>`);
+  }
 }
 
 /*TEMPLATE GENERATION FUNCTIONS*/
@@ -30,10 +57,11 @@ function getSearchHtmlString() {
   <input type="submit" id="submitStates">
   
   <label for="max-results">Maximum results to return</label>
-  <input type="number" name="max-results" id="js-max-results" value="10">
-  
+  <input type="number" name="max-results" id="maxResults" value="10">
+  <br>
+  <span>
   <input type="checkbox" id="AL" name="AL" value="AL" />
-  <label for="">Alabama</label>
+  <label for="AL">Alabama</label>
   
   <input type="checkbox" id="AK" name="AK" value="AK" />
   <label for="">Alaska</label>
@@ -46,7 +74,9 @@ function getSearchHtmlString() {
   
   <input type="checkbox" id="CA" name="CA" value="CA" />
   <label for="">California</label><br>
-  
+  </span>
+  <br>
+  <span>
   <input type="checkbox" id="CO" name="CO" value="CO" />
   <label for="">Colorado</label>
   
@@ -61,7 +91,9 @@ function getSearchHtmlString() {
   
   <input type="checkbox" id="GA" name="GA" value="GA" />
   <label for="">Georgia</label><br>
-  
+  </span>
+  <br>
+  <span>
   <input type="checkbox" id="HI" name="HI" value="HI" />
   <label for="">Hawaii</label>
   
@@ -75,8 +107,10 @@ function getSearchHtmlString() {
   <label for="">Indiana</label>
   
   <input type="checkbox" id="IA" name="IA" value="IA" />
-  <label for="">Iowa</label><br/><br>
-  
+  <label for="">Iowa</label>
+  </span>
+  <br>
+  <span>
   <input type="checkbox" id="KS" name="KS" value="KS" />
   <label for="">Kansas</label>
   
@@ -90,8 +124,10 @@ function getSearchHtmlString() {
   <label for="">Maine</label>
   
   <input type="checkbox" id="MD" name="MD" value="MD" />
-  <label for="">Maryland</label><br>
-  
+  <label for="">Maryland</label>
+  </span>
+  <br>
+  <span>
   <input type="checkbox" id="MA" name="MA" value="MA" />
   <label for="">Massachusetts</label>
   
@@ -105,8 +141,10 @@ function getSearchHtmlString() {
   <label for="">Mississippi</label>
   
   <input type="checkbox" id="MO" name="MO" value="MO" />
-  <label for="">Missouri</label><br>
-  
+  <label for="">Missouri</label>
+  </span>
+  <br>
+  <span>
   <input type="checkbox" id="MT" name="MT" value="MT" />
   <label for="">Montana</label>
   
@@ -120,8 +158,10 @@ function getSearchHtmlString() {
   <label for="">New Hempshire</label>
   
   <input type="checkbox" id="NJ" name="NJ" value="NJ" />
-  <label for="">New Jersey</label><br>
-  
+  <label for="">New Jersey</label>
+  </span>
+  <br>
+  <span>
   <input type="checkbox" id="NM" name="NM" value="NM" />
   <label for="">New Mexico</label>
   
@@ -135,8 +175,10 @@ function getSearchHtmlString() {
   <label for="">North Dakota</label>
   
   <input type="checkbox" id="OH" name="OH" value="OH" />
-  <label for="">Ohio</label><br>
-  
+  <label for="">Ohio</label>
+  </span>
+  <br>
+  <span>
   <input type="checkbox" id="OK" name="OK" value="OK" />
   <label for="">Oklahoma</label>
   
@@ -150,8 +192,10 @@ function getSearchHtmlString() {
   <label for="">Rhode Island</label>
   
   <input type="checkbox" id="SC" name="SC" value="SC" />
-  <label for="">South Carolina</label><br>
-  
+  <label for="">South Carolina</label>
+  </span>
+  <br>
+  <span>
   <input type="checkbox" id="SD" name="SD" value="SD" />
   <label for="">South Dakota</label>
   
@@ -165,8 +209,10 @@ function getSearchHtmlString() {
   <label for="">Utah</label>
   
   <input type="checkbox" id="VT" name="VT" value="VT" />
-  <label for="">Vermont</label><br>
-  
+  <label for="">Vermont</label>
+  </span>
+  <br>
+  <span>
   <input type="checkbox" id="VA" name="VA" value="VA" />
   <label for="">Virginia</label>
   
@@ -181,8 +227,14 @@ function getSearchHtmlString() {
   
   <input type="checkbox" id="WY" name="WY" value="WY" />
   <label for="">Wyoming</label>
+  </span>
   
-  </form>`;
+  </form>
+  
+  <section class='results'>
+  <ul class='resultsList'>
+  </ul>  
+   </section> `;
 }
 
 function watchForm() {
@@ -191,7 +243,7 @@ function watchForm() {
     const searchStates = $('input[type=checkbox]:checked').map(function (_, el) {
       return $(el).val();
     }).get();
-    const maxResults = $('#js-max-results').val();
+    const maxResults = $('#maxResults').val();
     getSelectedStated(searchStates, maxResults);
   });
   render(getSearchHtmlView());
